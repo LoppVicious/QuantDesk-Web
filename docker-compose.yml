@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # SERVICIO 1: BACKEND (API Python)
+  api:
+    build: ./backend
+    container_name: quantdesk-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Esto permite que si cambias código en Python, se actualice sin reconstruir
+      - ./backend/app:/app/app
+    restart: always
+
+  # SERVICIO 2: FRONTEND (React)
+  web:
+    build: ./frontend
+    container_name: quantdesk-web
+    ports:
+      - "3000:80" # Mapeamos el puerto 80 del contenedor al 3000 de tu PC
+    depends_on:
+      - api # Espera a que la API arranque antes de iniciar
+    restart: always

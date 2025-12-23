@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+numpy
+pandas
+scipy
+yfinance
+tenacity
+diskcache
+requests
+lxml
