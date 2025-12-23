@@ -17,10 +17,9 @@ const Navbar = ({ onNavigate }) => {
       </div>
       <div className="flex items-center gap-4">
         <div className="hidden md:flex flex-col items-end">
-          <span className="text-xs font-bold text-white">Admin User</span>
-          <span className="text-[10px] text-gray-500 uppercase tracking-wider">Pro License</span>
+          <span className="text-xs font-bold text-white">Usuario Pro</span>
         </div>
-        <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full border border-white/10 shadow-lg"></div>
+        <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full border border-white/10"></div>
       </div>
     </nav>
   );
