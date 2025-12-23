@@ -1,34 +1,19 @@
 # frontend/Dockerfile
-
-# ETAPA 1: Construcción (Build)
-FROM node:18-alpine as build
+# CAMBIO: Subimos de node:18 a node:22-alpine para compatibilidad con Vite moderno
+FROM node:22-alpine
 
 WORKDIR /app
 
-# Copiamos dependencias e instalamos
+# Copiamos solo los manifiestos primero
 COPY package.json package-lock.json ./
+
+# Instalación limpia
 RUN npm install
 
-# Copiamos el código fuente y construimos la versión final
+# Copiamos el resto del código
 COPY . .
-RUN npm run build
 
-# ETAPA 2: Servidor Web Ligero (Nginx) para servir la app
-FROM nginx:alpine
+# Exponemos el puerto de Vite
+EXPOSE 5173
 
-# Copiamos los archivos construidos desde la etapa anterior a la carpeta de Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Configuración básica de Nginx para React (Manejo de rutas SPA)
-RUN echo 'server { \
-    listen 80; \
-    location / { \
-        root /usr/share/nginx/html; \
-        index index.html index.htm; \
-        try_files $uri $uri/ /index.html; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "run", "dev", "--", "--host"]

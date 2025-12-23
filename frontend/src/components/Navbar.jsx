@@ -1,30 +1,28 @@
 import React from 'react';
-import { Bell, Settings, User } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react';
 
-const Navbar = () => {
+const Navbar = ({ onNavigate }) => {
   return (
-    <header className="h-16 bg-[#131722] border-b border-white/5 flex items-center justify-between px-6 sticky top-0 z-20">
-      {/* Lado Izquierdo (Breadcrumbs o Título) */}
-      <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-        <span className="text-sm font-medium text-gray-400">Sistema Conectado</span>
-      </div>
-
-      {/* Lado Derecho (Iconos) */}
-      <div className="flex items-center gap-4">
-        <button className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
-        </button>
-        <button className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-          <Settings className="w-5 h-5" />
-        </button>
-        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-blue-500 flex items-center justify-center text-white font-bold text-xs">
-          QP
+    <nav className="h-16 border-b border-white/5 bg-[#0e1117] flex items-center justify-between px-6 sticky top-0 z-20">
+      <div 
+        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={() => onNavigate && onNavigate('screener')}
+      >
+        <div className="bg-primary/20 p-2 rounded-lg">
+           <LayoutGrid className="w-5 h-5 text-primary" />
         </div>
+        <span className="text-lg font-bold tracking-tight text-white">
+          Quant<span className="text-primary">Desk</span>
+        </span>
       </div>
-    </header>
+      <div className="flex items-center gap-4">
+        <div className="hidden md:flex flex-col items-end">
+          <span className="text-xs font-bold text-white">Admin User</span>
+          <span className="text-[10px] text-gray-500 uppercase tracking-wider">Pro License</span>
+        </div>
+        <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full border border-white/10 shadow-lg"></div>
+      </div>
+    </nav>
   );
 };
-
 export default Navbar;

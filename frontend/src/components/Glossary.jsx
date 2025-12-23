@@ -1,21 +1,32 @@
 import React from 'react';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Activity, TrendingUp, BarChart2 } from 'lucide-react';
 
 const Glossary = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4 animate-in fade-in zoom-in duration-500">
-      <div className="bg-[#1b2030] p-6 rounded-full">
-        <BookOpen className="w-12 h-12 text-primary opacity-80" />
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-10">
+      <div className="text-center py-10 space-y-4">
+        <div className="inline-flex p-4 bg-[#1b2030] rounded-full mb-4 border border-white/5">
+           <BookOpen className="w-10 h-10 text-primary" />
+        </div>
+        <h1 className="text-4xl font-bold text-white">Glosario Financiero</h1>
       </div>
-      <h2 className="text-2xl font-bold text-white">Glosario de Conceptos</h2>
-      <p className="text-gray-400 max-w-md">
-        Aquí encontrarás explicaciones detalladas sobre VRP, Gamma Exposure y los distintos tipos de Muros.
-      </p>
-      <div className="px-4 py-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-lg text-sm font-bold">
-        🚧 Sección en Construcción
+      <div className="grid grid-cols-1 gap-4">
+        <div className="bg-[#131722] p-6 rounded-xl border border-white/5">
+          <div className="flex items-center gap-3 mb-2">
+            <Activity className="text-primary w-5 h-5"/>
+            <h3 className="text-xl font-bold text-white">VRP</h3>
+          </div>
+          <p className="text-gray-400 text-sm">Diferencia entre Volatilidad Implícita y Realizada.</p>
+        </div>
+        <div className="bg-[#131722] p-6 rounded-xl border border-white/5">
+          <div className="flex items-center gap-3 mb-2">
+            <TrendingUp className="text-blue-400 w-5 h-5"/>
+            <h3 className="text-xl font-bold text-white">GEX (Gamma Exposure)</h3>
+          </div>
+          <p className="text-gray-400 text-sm">Exposición total de los Market Makers.</p>
+        </div>
       </div>
     </div>
   );
 };
-
 export default Glossary;

@@ -1,10 +1,11 @@
 // frontend/src/services/api.js
 import axios from 'axios';
 
-// Apuntamos a tu servidor FastAPI que ya está corriendo
+// Apuntamos a tu servidor FastAPI
 const API_URL = 'http://localhost:8000/api/v1';
 
-export const getAssetProfile = async (ticker) => {
+// CORRECCIÓN: Renombrado de getAssetProfile a getAssetDetails para coincidir con SingleAsset.jsx
+export const getAssetDetails = async (ticker) => {
   try {
     const response = await axios.get(`${API_URL}/asset/${ticker}`);
     return response.data;

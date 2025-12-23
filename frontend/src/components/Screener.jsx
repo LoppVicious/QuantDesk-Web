@@ -17,10 +17,10 @@ const SECTORS = [
   "Utilities"
 ];
 
-const Screener = ({ onSelectTicker, onScanComplete }) => {
+const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
   const [loading, setLoading] = useState(false);
   const [taskId, setTaskId] = useState(null);
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState(initialResults || []);
   const [progress, setProgress] = useState(0);
 
   // ESTADO DE LOS FILTROS

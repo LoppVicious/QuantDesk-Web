@@ -1,23 +1,41 @@
 version: '3.8'
 
 services:
-  # SERVICIO 1: BACKEND (API Python)
+  # --- SERVICIO BACKEND ---
   api:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: quantdesk-api
+    # Comando para desarrollo: reload automático al guardar cambios
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     volumes:
-      # Esto permite que si cambias código en Python, se actualice sin reconstruir
-      - ./backend/app:/app/app
-    restart: always
+      - ./backend:/app           # Sincroniza tu código local con el contenedor
+      - quantdesk_cache:/app/.cache # Persiste la caché de diskcache
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+    restart: unless-stopped
 
-  # SERVICIO 2: FRONTEND (React)
+  # --- SERVICIO FRONTEND ---
   web:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: quantdesk-web
+    # Comando para desarrollo: servidor Vite expuesto
+    command: npm run dev -- --host
     ports:
-      - "3000:80" # Mapeamos el puerto 80 del contenedor al 3000 de tu PC
+      - "3000:5173" # Mapeamos puerto 5173 (Vite) al 3000 de tu PC
+    volumes:
+      - ./frontend:/app          # Sincroniza código
+      - /app/node_modules        # EVITA que tu node_modules local rompa el del contenedor
     depends_on:
-      - api # Espera a que la API arranque antes de iniciar
-    restart: always
+      - api
+    environment:
+      - VITE_API_URL=http://localhost:8000/api/v1 # Variable para Axios
+    restart: unless-stopped
+
+volumes:
+  quantdesk_cache:
