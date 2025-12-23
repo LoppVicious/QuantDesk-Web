@@ -16,19 +16,22 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
 
   // Filtros
   const [sector, setSector] = useState("Todos");
-  const [maxDte, setMaxDte] = useState(45);
+  // AHORA LLEGA HASTA 364
+  const [maxDte, setMaxDte] = useState(45); 
   const [lookback, setLookback] = useState(30);
-  const [numTickers, setNumTickers] = useState(50);
+  
+  // Por defecto 600 para asegurar que descargue TODO el SP500 si no se filtra
+  const [numTickers] = useState(600); 
 
   const handleScan = async () => {
     setLoading(true);
     setResults([]);
-    setProgress(5);
+    setProgress(1); // Empezamos en 1%
     
     try {
       const response = await startScanner({
         sector, 
-        num_tickers: parseInt(numTickers), 
+        num_tickers: numTickers, 
         max_dte: parseInt(maxDte), 
         lookback: parseInt(lookback)
       });
@@ -45,7 +48,9 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
       interval = setInterval(async () => {
         const statusData = await getScannerStatus(taskId);
         if (statusData) {
-          setProgress((prev) => Math.min(prev + 5, 95));
+          // Actualizamos progreso real del backend si viene, o incrementamos visualmente suave
+          const backendProgress = statusData.progress || 0;
+          setProgress((prev) => Math.max(prev, backendProgress));
           
           if (statusData.status === 'completed') {
             const data = statusData.data;
@@ -57,10 +62,10 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
           } else if (statusData.status === 'failed') {
             setLoading(false);
             setTaskId(null);
-            alert("Error: " + statusData.error);
+            alert("Error durante el escaneo: " + statusData.error);
           }
         }
-      }, 2000);
+      }, 1500); // Polling cada 1.5s
     }
     return () => clearInterval(interval);
   }, [taskId]);
@@ -71,7 +76,7 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
   };
 
   return (
-    <div className="max-w-[95%] mx-auto space-y-6 animate-in fade-in duration-500">
+    <div className="max-w-[95%] mx-auto space-y-6 animate-in fade-in duration-500 pb-10">
       {/* PANEL DE CONTROL */}
       <div className="bg-[#131722] p-6 rounded-2xl border border-white/5 shadow-xl">
         <div className="flex flex-col gap-6">
@@ -80,41 +85,57 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-500 uppercase">Sector</label>
-              <select value={sector} onChange={(e) => setSector(e.target.value)} className="w-full bg-[#0b0e14] border border-white/10 rounded-lg px-3 py-2 text-white text-sm">
+            {/* SECTOR */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Sector</label>
+              <select value={sector} onChange={(e) => setSector(e.target.value)} className="w-full bg-[#0b0e14] border border-white/10 rounded-lg px-3 py-3 text-white text-sm focus:border-primary focus:outline-none transition-colors">
                 {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
 
-            <div className="space-y-1">
+            {/* DTE SLIDER (HASTA 364) */}
+            <div className="space-y-2">
               <label className="text-xs font-bold text-gray-500 uppercase flex justify-between">
-                <span>Max DTE</span> <span className="text-primary">{maxDte}d</span>
+                <span>Max DTE</span> <span className="text-primary font-mono">{maxDte}d</span>
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Calendar className="w-4 h-4 text-gray-600"/>
-                <input type="range" min="7" max="90" step="7" value={maxDte} onChange={(e) => setMaxDte(e.target.value)} className="w-full accent-primary h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"/>
+                <input 
+                  type="range" min="7" max="364" step="7" 
+                  value={maxDte} onChange={(e) => setMaxDte(e.target.value)} 
+                  className="w-full accent-primary h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer hover:bg-gray-700 transition-colors"
+                />
               </div>
             </div>
 
-            <div className="space-y-1">
+            {/* LOOKBACK SLIDER */}
+            <div className="space-y-2">
               <label className="text-xs font-bold text-gray-500 uppercase flex justify-between">
-                <span>Lookback</span> <span className="text-primary">{lookback}d</span>
+                <span>Lookback</span> <span className="text-primary font-mono">{lookback}d</span>
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <BarChart3 className="w-4 h-4 text-gray-600"/>
-                <input type="range" min="10" max="60" step="5" value={lookback} onChange={(e) => setLookback(e.target.value)} className="w-full accent-primary h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"/>
+                <input 
+                  type="range" min="10" max="90" step="5" 
+                  value={lookback} onChange={(e) => setLookback(e.target.value)} 
+                  className="w-full accent-primary h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer hover:bg-gray-700 transition-colors"
+                />
               </div>
             </div>
 
+            {/* BOTÓN EJECUTAR */}
             <div>
                {!loading ? (
-                  <button onClick={handleScan} className="w-full bg-white text-black px-6 py-2.5 rounded-lg font-bold hover:bg-primary transition flex items-center justify-center gap-2">
-                    <Play className="w-4 h-4" /> EJECUTAR
+                  <button onClick={handleScan} className="w-full bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-primary hover:text-black transition-all shadow-lg shadow-white/5 flex items-center justify-center gap-2">
+                    <Play className="w-4 h-4" /> EJECUTAR ESCÁNER
                   </button>
                 ) : (
-                  <div className="w-full bg-[#0b0e14] border border-primary/30 rounded-lg p-2.5 flex items-center justify-center gap-2 text-primary text-xs font-bold animate-pulse">
-                    <Loader2 className="w-4 h-4 animate-spin" /> {progress}%
+                  <div className="w-full bg-[#0b0e14] border border-primary/30 rounded-xl p-3 flex flex-col items-center justify-center gap-1 relative overflow-hidden">
+                    <div className="flex items-center gap-2 text-primary text-xs font-bold z-10">
+                       <Loader2 className="w-4 h-4 animate-spin" /> PROCESANDO {progress}%
+                    </div>
+                    {/* Barra de progreso visual */}
+                    <div className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-300" style={{width: `${progress}%`}}></div>
                   </div>
                 )}
             </div>
@@ -124,12 +145,12 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
 
       {/* TABLA DE RESULTADOS */}
       {results.length > 0 ? (
-        <div className="bg-[#131722] rounded-2xl border border-white/5 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left whitespace-nowrap">
-              <thead>
-                <tr className="bg-black/30 text-gray-500 text-[11px] font-bold uppercase border-b border-white/5">
-                  <th className="p-4 sticky left-0 bg-[#131722] z-10">Ticker</th>
+        <div className="bg-[#131722] rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+          <div className="overflow-x-auto max-h-[600px]">
+            <table className="w-full text-left whitespace-nowrap relative">
+              <thead className="sticky top-0 z-20 bg-[#131722] shadow-sm">
+                <tr className="text-gray-500 text-[11px] font-bold uppercase border-b border-white/5">
+                  <th className="p-4 bg-[#131722]">Ticker</th>
                   <th className="p-4">Sector</th>
                   <th className="p-4 text-right">Precio</th>
                   <th className="p-4 text-right">Dist SMA20</th>
@@ -142,17 +163,29 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
               </thead>
               <tbody className="divide-y divide-white/5 text-sm">
                 {results.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-white/[0.02] group">
-                    <td className="p-4 font-bold text-white sticky left-0 bg-[#131722] group-hover:bg-[#1a1f2e]">{row.Ticker}</td>
-                    <td className="p-4 text-xs text-gray-500">{row.Sector}</td>
+                  <tr key={idx} className="hover:bg-white/[0.02] group transition-colors">
+                    <td className="p-4 font-bold text-white sticky left-0 bg-[#131722] group-hover:bg-[#1a1f2e] transition-colors shadow-lg shadow-black/20 border-r border-white/5">
+                      {row.Ticker}
+                    </td>
+                    <td className="p-4 text-xs text-gray-500 truncate max-w-[150px]">{row.Sector}</td>
                     <td className="p-4 text-right font-mono text-gray-300">${(row.Price || 0).toFixed(2)}</td>
-                    <td className={`p-4 text-right font-mono ${getColorClass(row['Dist SMA20 %'])}`}>{(row['Dist SMA20 %'] || 0).toFixed(2)}%</td>
-                    <td className={`p-4 text-right font-mono ${getColorClass(row['Dist SMA50 %'])}`}>{(row['Dist SMA50 %'] || 0).toFixed(2)}%</td>
-                    <td className={`p-4 text-right font-bold ${getColorClass(row.VRP)}`}>{(row.VRP || 0).toFixed(2)}</td>
-                    <td className="p-4 text-right font-mono border-l border-white/5 text-blue-300">{(row['Call Wall'] || 0).toFixed(0)}</td>
-                    <td className="p-4 text-right font-mono border-l border-white/5 text-red-300">{(row['Put Wall'] || 0).toFixed(0)}</td>
+                    <td className={`p-4 text-right font-mono ${getColorClass(row['Dist SMA20 %'])}`}>
+                        {(row['Dist SMA20 %'] || 0).toFixed(2)}%
+                    </td>
+                    <td className={`p-4 text-right font-mono ${getColorClass(row['Dist SMA50 %'])}`}>
+                        {(row['Dist SMA50 %'] || 0).toFixed(2)}%
+                    </td>
+                    <td className={`p-4 text-right font-bold ${getColorClass(row.VRP)}`}>
+                        {(row.VRP || 0).toFixed(2)}
+                    </td>
+                    <td className="p-4 text-right font-mono border-l border-white/5 text-blue-300">
+                        {(row['Call Wall'] || 0).toFixed(0)}
+                    </td>
+                    <td className="p-4 text-right font-mono border-l border-white/5 text-red-300">
+                        {(row['Put Wall'] || 0).toFixed(0)}
+                    </td>
                     <td className="p-4 text-center">
-                      <button onClick={() => onSelectTicker(row.Ticker)} className="text-gray-400 hover:text-primary p-2">
+                      <button onClick={() => onSelectTicker(row.Ticker)} className="text-gray-400 hover:text-white hover:bg-primary/20 p-2 rounded-lg transition-all">
                         <ArrowRight className="w-5 h-5" />
                       </button>
                     </td>
@@ -161,12 +194,15 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
               </tbody>
             </table>
           </div>
+          <div className="p-3 bg-[#0b0e14] border-t border-white/5 text-xs text-center text-gray-600">
+            Mostrando {results.length} activos
+          </div>
         </div>
       ) : (
         !loading && (
-          <div className="text-center py-20 text-gray-600 border border-dashed border-white/5 rounded-2xl">
+          <div className="text-center py-20 text-gray-600 border border-dashed border-white/5 rounded-2xl bg-[#131722]/50">
             <TrendingUp className="w-12 h-12 mx-auto opacity-20 mb-4" />
-            <p>Configura los filtros y pulsa <span className="text-white font-bold">EJECUTAR</span> para ver oportunidades.</p>
+            <p>Selecciona filtros y pulsa <span className="text-white font-bold">EJECUTAR</span> para escanear el mercado.</p>
           </div>
         )
       )}

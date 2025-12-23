@@ -54,7 +54,7 @@ class YFinanceProvider(MarketDataProvider):
             tk = yf.Ticker(ticker)
             if not expiration:
                 exps = tk.options
-                if not exps: raise ValueError
+                if not exps: raise ValueError("No options found")
                 expiration = exps[0]
             return tk.option_chain(expiration)
         except:
@@ -78,8 +78,8 @@ class YFinanceProvider(MarketDataProvider):
                 except: continue
             if not all_opts: return pd.DataFrame()
             df = pd.concat(all_opts, ignore_index=True)
-            for col in ['strike', 'lastPrice', 'openInterest', 'impliedVolatility']:
-                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+            for c in ['strike', 'lastPrice', 'openInterest', 'impliedVolatility']:
+                if c in df.columns: df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
             return df
         except:
             return pd.DataFrame()
@@ -90,7 +90,13 @@ class YFinanceProvider(MarketDataProvider):
             url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
             df = pd.read_csv(url)
             df = df.rename(columns={"Symbol": "Ticker", "GICS Sector": "Sector"})
+            
+            # Limpieza: Reemplazar puntos por guiones (BRK.B -> BRK-B)
             df['Ticker'] = df['Ticker'].str.replace('.', '-', regex=False)
+            
+            # FILTRO: Eliminamos GOOG (sin voto) para dejar solo GOOGL (con voto)
+            df = df[df['Ticker'] != 'GOOG']
+            
             return df[['Ticker', 'Sector']].to_dict('records')
         except:
-            return [{"Ticker": "SPY", "Sector": "ETF"}]
+            return [{"Ticker": "SPY", "Sector": "ETF"}, {"Ticker": "AAPL", "Sector": "Tech"}]
