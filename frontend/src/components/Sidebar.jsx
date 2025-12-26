@@ -1,67 +1,69 @@
 import React from 'react';
-import { LayoutDashboard, BookOpen, BarChart2, HelpCircle } from 'lucide-react';
+import { LayoutGrid, Search, BookOpen, BarChart2 } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
-  
   const menuItems = [
-    { id: 'screener', label: 'Escáner de Mercado', icon: LayoutDashboard, desc: 'Busca oportunidades' },
-    { id: 'playbook', label: 'Playbook', icon: BookOpen, desc: 'Estrategias Top' },
-    { id: 'analysis', label: 'Análisis Individual', icon: BarChart2, desc: 'GEX, Muros y Volatilidad' },
-    { id: 'glossary', label: 'Glosario / Ayuda', icon: HelpCircle, desc: 'Conceptos Clave' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid }, // PRIMERA POSICIÓN
+    { id: 'screener', label: 'Scanner', icon: Search },
+    { id: 'playbook', label: 'Playbook', icon: BookOpen },
+    { id: 'analysis', label: 'Analysis', icon: BarChart2 },
+    // { id: 'glossary', label: 'Glosario', icon: FileText } // Opcional si quieres enlace directo
   ];
 
   return (
-    <aside className="w-64 bg-[#0b0e14] border-r border-white/5 flex flex-col h-screen sticky top-0">
+    <div className="w-20 lg:w-64 bg-[#0b0e14] border-r border-white/5 flex flex-col h-screen transition-all duration-300">
+      
       {/* LOGO */}
-      <div className="h-16 flex items-center px-6 border-b border-white/5">
-        <div className="w-8 h-8 bg-gradient-to-br from-primary to-blue-600 rounded-lg mr-3 shadow-lg shadow-primary/20"></div>
-        <h1 className="text-xl font-bold text-white tracking-tight">QuantDesk</h1>
+      <div className="h-16 flex items-center justify-center lg:justify-start px-6 border-b border-white/5">
+        <div className="p-2 bg-primary/10 rounded-xl mr-3">
+          <LayoutGrid className="w-6 h-6 text-primary" />
+        </div>
+        <span className="hidden lg:block text-xl font-bold tracking-tight text-white">
+          Quant<span className="text-primary">Desk</span>
+        </span>
       </div>
 
-      {/* MENU */}
-      <div className="flex-1 py-6 px-3 space-y-1">
-        <div className="px-3 mb-2 text-xs font-bold text-gray-600 uppercase tracking-wider">Plataforma</div>
-        
+      {/* MENÚ */}
+      <nav className="flex-1 py-6 space-y-2 px-3">
         {menuItems.map((item) => {
-          const Icon = item.icon;
           const isActive = activeTab === item.id;
+          const Icon = item.icon;
           
           return (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group text-left ${
+              className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group ${
                 isActive 
-                  ? 'bg-primary/10 text-primary border border-primary/20' 
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'
+                  ? 'bg-primary text-black shadow-[0_0_15px_rgba(0,212,170,0.3)] font-bold' 
+                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <div className={`p-2 rounded-lg transition-colors ${isActive ? 'bg-primary/20 text-primary' : 'bg-white/5 group-hover:bg-white/10'}`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <div>
-                <div className={`font-bold text-sm ${isActive ? 'text-white' : ''}`}>{item.label}</div>
-                <div className="text-[10px] opacity-60 font-normal">{item.desc}</div>
-              </div>
-              {isActive && <div className="ml-auto w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_rgba(0,212,170,0.8)]"></div>}
+              <Icon className={`w-5 h-5 ${isActive ? 'text-black' : 'text-gray-400 group-hover:text-white'}`} />
+              <span className="hidden lg:block">{item.label}</span>
+              
+              {isActive && (
+                <div className="hidden lg:block ml-auto w-1.5 h-1.5 rounded-full bg-black/50" />
+              )}
             </button>
           );
         })}
-      </div>
+      </nav>
 
       {/* FOOTER */}
       <div className="p-4 border-t border-white/5">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-8 h-8 rounded-full bg-gray-700"></div>
-          <div>
-            <div className="text-xs font-bold text-white">Usuario Pro</div>
-            <div className="text-[10px] text-green-500 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Conectado
-            </div>
+        <div className="bg-gradient-to-br from-[#131722] to-black p-4 rounded-xl border border-white/5 hidden lg:block">
+          <p className="text-xs text-gray-500 mb-2">Estado del Sistema</p>
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            <span className="text-xs font-bold text-green-400">Conectado</span>
           </div>
         </div>
       </div>
-    </aside>
+    </div>
   );
 };
 

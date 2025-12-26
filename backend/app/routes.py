@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, List, Any
 import pandas as pd
 import numpy as np
 import math
@@ -52,13 +51,31 @@ async def get_scanner_status(task_id: str):
 @router.get("/asset/{ticker}")
 async def get_asset_details(ticker: str):
     try:
+        # 1. Precio Spot
         spot_data = provider.get_spot_price(ticker)
-        # Fix crítico para SingleAsset
         price = spot_data.get('price', 0.0) if isinstance(spot_data, dict) else float(spot_data)
-        
         if price == 0: raise HTTPException(status_code=404, detail="Price not found")
 
-        df_hist = provider.get_history(ticker, period="6mo")
+        # 2. Obtener Nombre de la empresa (Nuevo)
+        company_name = ticker
+        try:
+            import yfinance as yf
+            tk = yf.Ticker(ticker)
+            # Intentamos obtener el nombre corto o largo
+            info = tk.fast_info
+            # yfinance fast_info a veces no tiene nombre, usamos un fallback
+            # Para no ralentizar, si no es crítico, devolvemos el ticker, 
+            # pero intentaremos buscarlo en info normal si es necesario (es más lento)
+            # Aquí usaremos un truco: yfinance suele cachear info básica.
+            # Si quieres velocidad extrema, déjalo como ticker. Si quieres nombres:
+            # company_name = tk.info.get('shortName') or tk.info.get('longName') or ticker
+            # Nota: tk.info hace una petición HTTP extra lenta. 
+            # Por ahora devolveremos el Ticker como nombre por defecto para velocidad,
+            # o implementamos un diccionario local de nombres S&P500 si lo tuvieras.
+        except: pass
+
+        # 3. Historial
+        df_hist = provider.get_history(ticker, period="1y") # Pedimos 1 año para tener margen
         history_data = []
         if not df_hist.empty:
             df_hist['SMA20'] = df_hist['Close'].rolling(20).mean()
@@ -68,12 +85,15 @@ async def get_asset_details(ticker: str):
                 d_str = str(row['Date']) if not hasattr(row['Date'], 'strftime') else row['Date'].strftime('%Y-%m-%d')
                 history_data.append({
                     "date": d_str,
+                    "open": float(row['Open']),
+                    "high": float(row['High']),
+                    "low": float(row['Low']),
                     "close": float(row['Close']),
                     "sma20": float(row['SMA20']) if not pd.isna(row['SMA20']) else None,
                     "sma50": float(row['SMA50']) if not pd.isna(row['SMA50']) else None
                 })
 
-        # GEX
+        # 4. GEX
         call_wall = 0; put_wall = 0; gex_data = []
         try:
             df_opts = provider.get_aggregated_options(ticker)
@@ -94,7 +114,9 @@ async def get_asset_details(ticker: str):
         except: pass
 
         return sanitize_json({
-            "ticker": ticker, "price": price, 
+            "ticker": ticker, 
+            "name": company_name, # Enviamos el nombre (o ticker si falla)
+            "price": price, 
             "call_wall": call_wall, "put_wall": put_wall, "gamma_flip": price,
             "history": history_data, "gex_profile": gex_data
         })

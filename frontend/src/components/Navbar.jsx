@@ -18,22 +18,6 @@ const Navbar = ({ onNavigate }) => {
           Quant<span className="text-primary">Desk</span>
         </span>
       </div>
-
-      <div className="flex items-center gap-6">
-        {/* NUEVO ENLACE AL DASHBOARD */}
-        <button 
-            onClick={() => onNavigate('dashboard')}
-            className="hidden md:flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-bold"
-        >
-            <Home className="w-4 h-4" /> Dashboard
-        </button>
-
-        <div className="hidden md:flex flex-col items-end">
-          <span className="text-xs font-bold text-white">Admin User</span>
-          <span className="text-[10px] text-gray-500 uppercase tracking-wider">Pro License</span>
-        </div>
-        <div className="w-9 h-9 bg-gradient-to-br from-primary to-purple-600 rounded-full border-2 border-[#0e1117] shadow-lg"></div>
-      </div>
     </nav>
   );
 };
