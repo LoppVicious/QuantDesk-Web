@@ -16,11 +16,11 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
 
   // Filtros
   const [sector, setSector] = useState("Todos");
-  // AHORA LLEGA HASTA 364
+  // AUMENTADO DTE A 364 DIAS
   const [maxDte, setMaxDte] = useState(45); 
   const [lookback, setLookback] = useState(30);
   
-  // Por defecto 600 para asegurar que descargue TODO el SP500 si no se filtra
+  // AUMENTADO A 600 PARA CUBRIR TODO EL SP500
   const [numTickers] = useState(600); 
 
   const handleScan = async () => {
@@ -48,7 +48,7 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
       interval = setInterval(async () => {
         const statusData = await getScannerStatus(taskId);
         if (statusData) {
-          // Actualizamos progreso real del backend si viene, o incrementamos visualmente suave
+          // Usamos el progreso real del backend si existe, o avanzamos suavemente
           const backendProgress = statusData.progress || 0;
           setProgress((prev) => Math.max(prev, backendProgress));
           
@@ -134,7 +134,6 @@ const Screener = ({ onSelectTicker, onScanComplete, initialResults }) => {
                     <div className="flex items-center gap-2 text-primary text-xs font-bold z-10">
                        <Loader2 className="w-4 h-4 animate-spin" /> PROCESANDO {progress}%
                     </div>
-                    {/* Barra de progreso visual */}
                     <div className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-300" style={{width: `${progress}%`}}></div>
                   </div>
                 )}
