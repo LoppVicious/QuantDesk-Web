@@ -46,12 +46,12 @@ const TradingViewWidget = () => {
       "enable_publishing": false,
       "allow_symbol_change": false, // <--- Permite cambiar el ticker
       "backgroundColor": "rgba(19, 23, 34, 1)", // <--- Fondo exacto de tu App (#131722)
-      "gridColor": "rgba(255, 255, 255, 0.02)", // Rejilla muy sutil
+      "gridColor": "rgba(255, 255, 255, 0)", // Rejilla muy sutil
       "hide_top_toolbar": false, // Muestra herramientas de tiempo y ticker
       "hide_legend": false,
       "save_image": false,
-      "calendar": true,
-      "hide_volume": false,
+      "calendar": false,
+      "hide_volume": true,
       "support_host": "https://www.tradingview.com",
       // --- TUS COLORES CORPORATIVOS ---
       "overrides": {
