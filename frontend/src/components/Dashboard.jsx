@@ -81,7 +81,7 @@ const TradingViewCalendar = () => {
       "height": "100%",
       "locale": "en",
       "importanceFilter": "0,1", // Solo noticias de Alta (1) y Media (0) importancia
-      "currencyFilter": "USD" // Solo noticias de USA (relevante para SPY)
+      "currencyFilter": "USD, EUR" // Solo noticias de USA (relevante para SPY)
     });
     container.current.appendChild(script);
   }, []);
@@ -160,7 +160,6 @@ const Dashboard = ({ watchlist, onSelectTicker }) => {
                     <TradingViewCalendar />
                 </div>
             </div>
-
         </div>
       </div>
     </div>
