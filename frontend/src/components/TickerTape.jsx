@@ -14,16 +14,13 @@ const TickerTape = () => {
     script.async = true;
     script.innerHTML = JSON.stringify({
       "symbols": [
-        { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
-        { "proName": "FOREXCOM:NSXUSD", "title": "Nasdaq 100" },
-        { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
-        { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" },
-        { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" },
-        { "description": "VIX", "proName": "CBOE:VIX" },
-        { "description": "Apple", "proName": "NASDAQ:AAPL" },
-        { "description": "Nvidia", "proName": "NASDAQ:NVDA" },
-        { "description": "Tesla", "proName": "NASDAQ:TSLA" },
-        { "description": "Gold", "proName": "TVC:GOLD" }
+        { "proName": "CAPITALCOM:US500", "title": "S&P 500" },
+        { "proName": "CAPITALCOM:US100", "title": "Nasdaq 100" },
+        { "proName": "CMCMARKETS:EURUSD", "title": "EUR/USD" },
+        { "proName": "BINANCE:BTCUSDT", "title": "Bitcoin" },
+        { "proName": "BINANCE:ETHUSDT", "title": "Ethereum" },
+        { "description": "VIX", "proName": "TVC:VIX" },
+        { "description": "Gold", "proName": "OANDA:XAUUSD" }
       ],
       "showSymbolLogo": true,
       "colorTheme": "dark",
