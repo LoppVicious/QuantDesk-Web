@@ -19,7 +19,7 @@ const TickerTape = () => {
         { "proName": "CMCMARKETS:EURUSD", "title": "EUR/USD" },
         { "proName": "BINANCE:BTCUSDT", "title": "Bitcoin" },
         { "proName": "BINANCE:ETHUSDT", "title": "Ethereum" },
-        { "description": "VIX", "proName": "CBOE:VIX" },
+        { "proName": "CBOE:VIX", "title": "VIX" },
         { "description": "Gold", "proName": "OANDA:XAUUSD" }
       ],
       "showSymbolLogo": true,
