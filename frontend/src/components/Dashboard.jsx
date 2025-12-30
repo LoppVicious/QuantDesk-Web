@@ -1,14 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { List, CalendarDays, ArrowRight, Star, Activity, AlertCircle } from 'lucide-react';
+import { List, CalendarDays, ArrowRight, Star } from 'lucide-react';
 
-// MOCKUP CALENDARIO
-const MOCK_CALENDAR = [
-  { time: '08:30', currency: 'USD', impact: 'high', event: 'Non-Farm Payrolls', actual: '190K', forecast: '180K', prev: '216K' },
-  { time: '14:00', currency: 'USD', impact: 'high', event: 'FOMC Meeting', actual: '-', forecast: '-', prev: '-' },
-  { time: '16:30', currency: 'USD', impact: 'low', event: 'Crude Oil Inv.', actual: '1.2M', forecast: '-0.5M', prev: '-2.5M' },
-];
-
-// WIDGET ESTADÍSTICAS
+// WIDGET ESTADÍSTICAS (HEADER)
 const MarketStatCard = ({ title, value, subtext, trend, color }) => (
     <div className="bg-[#131722] p-3 rounded-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors h-24">
         <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">{title}</span>
@@ -22,14 +15,12 @@ const MarketStatCard = ({ title, value, subtext, trend, color }) => (
     </div>
 );
 
-// --- COMPONENTE TRADINGVIEW PERSONALIZADO ---
-const TradingViewWidget = () => {
+// --- 1. WIDGET GRÁFICO AVANZADO (CHART) ---
+const TradingViewChart = () => {
   const container = useRef();
 
   useEffect(() => {
-    if (container.current) {
-        container.current.innerHTML = "";
-    }
+    if (container.current) container.current.innerHTML = "";
 
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
@@ -37,23 +28,22 @@ const TradingViewWidget = () => {
     script.async = true;
     script.innerHTML = JSON.stringify({
       "autosize": true,
-      "symbol": "AMEX:SPY", // <--- CORRECCIÓN: SPY por defecto
+      "symbol": "AMEX:SPY",
       "interval": "D",
       "timezone": "Etc/UTC",
       "theme": "dark",
-      "style": "1", // 1 = Velas
+      "style": "1",
       "locale": "en",
       "enable_publishing": false,
-      "allow_symbol_change": false, // <--- Permite cambiar el ticker
-      "backgroundColor": "rgba(19, 23, 34, 1)", // <--- Fondo exacto de tu App (#131722)
-      "gridColor": "rgba(255, 255, 255, 0)", // Rejilla muy sutil
-      "hide_top_toolbar": false, // Muestra herramientas de tiempo y ticker
+      "allow_symbol_change": true,
+      "backgroundColor": "rgba(19, 23, 34, 1)",
+      "gridColor": "rgba(255, 255, 255, 0.02)",
+      "hide_top_toolbar": false,
       "hide_legend": false,
       "save_image": false,
       "calendar": false,
       "hide_volume": true,
       "support_host": "https://www.tradingview.com",
-      // --- TUS COLORES CORPORATIVOS ---
       "overrides": {
           "mainSeriesProperties.candleStyle.upColor": "#00D4AA",
           "mainSeriesProperties.candleStyle.downColor": "#EF4444",
@@ -63,7 +53,6 @@ const TradingViewWidget = () => {
           "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444"
       }
     });
-    
     container.current.appendChild(script);
   }, []);
 
@@ -74,11 +63,42 @@ const TradingViewWidget = () => {
   );
 };
 
+// --- 2. WIDGET CALENDARIO ECONÓMICO (EVENTS) ---
+const TradingViewCalendar = () => {
+  const container = useRef();
+
+  useEffect(() => {
+    if (container.current) container.current.innerHTML = "";
+
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js";
+    script.type = "text/javascript";
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      "colorTheme": "dark",
+      "isTransparent": true, // Fondo transparente para fusionarse con el div padre
+      "width": "100%",
+      "height": "100%",
+      "locale": "en",
+      "importanceFilter": "0,1", // Solo noticias de Alta (1) y Media (0) importancia
+      "currencyFilter": "USD" // Solo noticias de USA (relevante para SPY)
+    });
+    container.current.appendChild(script);
+  }, []);
+
+  return (
+    <div className="tradingview-widget-container" ref={container} style={{ height: "100%", width: "100%" }}>
+      <div className="tradingview-widget-container__widget"></div>
+    </div>
+  );
+};
+
+// --- COMPONENTE PRINCIPAL ---
 const Dashboard = ({ watchlist, onSelectTicker }) => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-10">
       
-      {/* 1. WIDGETS HEADER */}
+      {/* HEADER WIDGETS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MarketStatCard 
             title="SPX Daily" 
@@ -93,18 +113,17 @@ const Dashboard = ({ watchlist, onSelectTicker }) => {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
-        {/* COLUMNA IZQUIERDA (2/3): Gráfico TradingView */}
+        {/* IZQUIERDA (2/3): Gráfico TradingView */}
         <div className="xl:col-span-2 space-y-6">
-            <div className="bg-[#131722] rounded-2xl border border-white/5 shadow-xl h-[500px] overflow-hidden relative">
-                {/* WIDGET TRADINGVIEW */}
-                <TradingViewWidget />
+            <div className="bg-[#131722] rounded-2xl border border-white/5 shadow-xl h-[600px] overflow-hidden relative">
+                <TradingViewChart />
             </div>
         </div>
 
-        {/* COLUMNA DERECHA (1/3): Sidebar Widgets */}
+        {/* DERECHA (1/3): Sidebar Widgets */}
         <div className="space-y-6 flex flex-col h-full">
             
-            {/* WATCHLIST */}
+            {/* 1. WATCHLIST */}
             <div className="bg-[#131722] rounded-2xl border border-white/5 p-6 shadow-xl flex-1 max-h-[300px] flex flex-col">
                 <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
                     <List className="w-4 h-4 text-yellow-400" />
@@ -129,34 +148,16 @@ const Dashboard = ({ watchlist, onSelectTicker }) => {
                 )}
             </div>
 
-            {/* CALENDARIO */}
-            <div className="bg-[#131722] rounded-2xl border border-white/5 p-6 shadow-xl">
-                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
+            {/* 2. CALENDARIO ECONÓMICO REAL (TradingView) */}
+            <div className="bg-[#131722] rounded-2xl border border-white/5 p-4 shadow-xl h-[400px] flex flex-col">
+                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/5 px-2">
                     <CalendarDays className="w-4 h-4 text-blue-400" />
-                    <h2 className="text-md font-bold text-white">Agenda</h2>
+                    <h2 className="text-md font-bold text-white">Agenda Económica</h2>
                 </div>
-                <div className="space-y-2">
-                    <div className="grid grid-cols-4 text-[10px] text-gray-500 uppercase font-bold mb-1 px-2">
-                        <span className="col-span-2">Evento</span>
-                        <span className="text-right">Est.</span>
-                        <span className="text-right">Real</span>
-                    </div>
-                    {MOCK_CALENDAR.map((item, idx) => (
-                        <div key={idx} className="grid grid-cols-4 items-center p-2 bg-[#0b0e14] rounded border border-white/5 text-xs hover:bg-white/5">
-                            <div className="col-span-2 flex flex-col">
-                                <span className="text-white font-medium truncate">{item.event}</span>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-gray-500 font-mono text-[10px]">{item.time}</span>
-                                    <div className={`w-1.5 h-1.5 rounded-full ${item.impact==='high'?'bg-red-500':'bg-yellow-500'}`}></div>
-                                </div>
-                            </div>
-                            <div className="text-right text-gray-400 font-mono">{item.forecast}</div>
-                            <div className={`text-right font-mono font-bold ${item.actual==='-'?'text-gray-600':'text-white'}`}>{item.actual}</div>
-                        </div>
-                    ))}
-                </div>
-                <div className="mt-3 flex items-center justify-center gap-1 text-[10px] text-gray-600">
-                    <AlertCircle className="w-3 h-3"/> Datos de ejemplo
+                
+                {/* Contenedor del Widget */}
+                <div className="flex-1 w-full overflow-hidden">
+                    <TradingViewCalendar />
                 </div>
             </div>
 
