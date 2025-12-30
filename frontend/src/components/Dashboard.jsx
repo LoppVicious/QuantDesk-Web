@@ -44,14 +44,14 @@ const TradingViewWidget = () => {
       "style": "1", // 1 = Velas
       "locale": "en",
       "enable_publishing": false,
-      "allow_symbol_change": true, // <--- Permite cambiar el ticker
+      "allow_symbol_change": false, // <--- Permite cambiar el ticker
       "backgroundColor": "rgba(19, 23, 34, 1)", // <--- Fondo exacto de tu App (#131722)
       "gridColor": "rgba(255, 255, 255, 0.02)", // Rejilla muy sutil
       "hide_top_toolbar": false, // Muestra herramientas de tiempo y ticker
       "hide_legend": false,
       "save_image": false,
-      "calendar": false,
-      "hide_volume": true,
+      "calendar": true,
+      "hide_volume": false,
       "support_host": "https://www.tradingview.com",
       // --- TUS COLORES CORPORATIVOS ---
       "overrides": {
