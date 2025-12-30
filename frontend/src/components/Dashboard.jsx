@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { List, CalendarDays, ArrowRight, Star, Activity, TrendingUp, AlertCircle } from 'lucide-react';
+import { List, CalendarDays, ArrowRight, Star, Activity, AlertCircle } from 'lucide-react';
 
 // MOCKUP CALENDARIO
 const MOCK_CALENDAR = [
@@ -22,12 +22,11 @@ const MarketStatCard = ({ title, value, subtext, trend, color }) => (
     </div>
 );
 
-// --- COMPONENTE TRADINGVIEW ---
+// --- COMPONENTE TRADINGVIEW PERSONALIZADO ---
 const TradingViewWidget = () => {
   const container = useRef();
 
   useEffect(() => {
-    // Limpiamos el contenedor por si acaso
     if (container.current) {
         container.current.innerHTML = "";
     }
@@ -38,28 +37,38 @@ const TradingViewWidget = () => {
     script.async = true;
     script.innerHTML = JSON.stringify({
       "autosize": true,
-      "symbol": "SP:SPX", // S&P 500 Index
+      "symbol": "AMEX:SPY", // <--- CORRECCIÓN: SPY por defecto
       "interval": "D",
       "timezone": "Etc/UTC",
       "theme": "dark",
       "style": "1", // 1 = Velas
       "locale": "en",
       "enable_publishing": false,
-      "backgroundColor": "rgba(19, 23, 34, 1)", // Coincide con tu fondo #131722
-      "gridColor": "rgba(255, 255, 255, 0.05)",
-      "hide_top_toolbar": false, // Mostramos toolbar para cambiar tiempo
+      "allow_symbol_change": true, // <--- Permite cambiar el ticker
+      "backgroundColor": "rgba(19, 23, 34, 1)", // <--- Fondo exacto de tu App (#131722)
+      "gridColor": "rgba(255, 255, 255, 0.02)", // Rejilla muy sutil
+      "hide_top_toolbar": false, // Muestra herramientas de tiempo y ticker
       "hide_legend": false,
       "save_image": false,
       "calendar": false,
       "hide_volume": true,
-      "support_host": "https://www.tradingview.com"
+      "support_host": "https://www.tradingview.com",
+      // --- TUS COLORES CORPORATIVOS ---
+      "overrides": {
+          "mainSeriesProperties.candleStyle.upColor": "#00D4AA",
+          "mainSeriesProperties.candleStyle.downColor": "#EF4444",
+          "mainSeriesProperties.candleStyle.borderUpColor": "#00D4AA",
+          "mainSeriesProperties.candleStyle.borderDownColor": "#EF4444",
+          "mainSeriesProperties.candleStyle.wickUpColor": "#00D4AA",
+          "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444"
+      }
     });
     
     container.current.appendChild(script);
   }, []);
 
   return (
-    <div className="tradingview-widget-container" ref={container} style={{ height: "100%", width: "100%" }}>
+    <div className="tradingview-widget-container" ref={container} style={{ height: "100%", width: "100%", borderRadius: "1rem", overflow: "hidden" }}>
       <div className="tradingview-widget-container__widget" style={{ height: "calc(100% - 32px)", width: "100%" }}></div>
     </div>
   );
