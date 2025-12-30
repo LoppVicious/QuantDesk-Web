@@ -1,9 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar 
-} from 'recharts';
-import { TrendingUp, List, CalendarDays, ArrowRight, Star, Activity, AlertCircle, BarChart2, LineChart } from 'lucide-react';
-import { getAssetDetails } from '../services/api';
+import React, { useEffect, useRef } from 'react';
+import { List, CalendarDays, ArrowRight, Star, Activity, TrendingUp, AlertCircle } from 'lucide-react';
 
 // MOCKUP CALENDARIO
 const MOCK_CALENDAR = [
@@ -12,7 +8,7 @@ const MOCK_CALENDAR = [
   { time: '16:30', currency: 'USD', impact: 'low', event: 'Crude Oil Inv.', actual: '1.2M', forecast: '-0.5M', prev: '-2.5M' },
 ];
 
-// WIDGET PEQUEÑO
+// WIDGET ESTADÍSTICAS
 const MarketStatCard = ({ title, value, subtext, trend, color }) => (
     <div className="bg-[#131722] p-3 rounded-xl border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors h-24">
         <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">{title}</span>
@@ -26,127 +22,60 @@ const MarketStatCard = ({ title, value, subtext, trend, color }) => (
     </div>
 );
 
-const MarketChart = ({ onPriceChange }) => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [chartType, setChartType] = useState('area'); 
-  const [timeRange, setTimeRange] = useState(30); 
+// --- COMPONENTE TRADINGVIEW ---
+const TradingViewWidget = () => {
+  const container = useRef();
 
   useEffect(() => {
-    setLoading(true);
-    getAssetDetails("SPY")
-      .then(res => {
-        if(res && res.history && res.history.length > 0) {
-            // Calcular cambio diario real para el widget
-            const last = res.history[res.history.length - 1];
-            const prev = res.history[res.history.length - 2];
-            if (last && prev && onPriceChange) {
-                const change = ((last.close - prev.close) / prev.close) * 100;
-                onPriceChange(change);
-            }
+    // Limpiamos el contenedor por si acaso
+    if (container.current) {
+        container.current.innerHTML = "";
+    }
 
-            // Procesar datos para velas
-            const processed = res.history.map((d, i, arr) => {
-                const prevClose = i > 0 ? arr[i-1].close : d.close;
-                return {
-                    date: d.date,
-                    close: d.close,
-                    open: d.open || prevClose, // Fallback si open es 0
-                    high: d.high || Math.max(d.close, prevClose) * 1.001,
-                    low: d.low || Math.min(d.close, prevClose) * 0.999
-                };
-            });
-            setData(processed);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.type = "text/javascript";
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      "autosize": true,
+      "symbol": "SP:SPX", // S&P 500 Index
+      "interval": "D",
+      "timezone": "Etc/UTC",
+      "theme": "dark",
+      "style": "1", // 1 = Velas
+      "locale": "en",
+      "enable_publishing": false,
+      "backgroundColor": "rgba(19, 23, 34, 1)", // Coincide con tu fondo #131722
+      "gridColor": "rgba(255, 255, 255, 0.05)",
+      "hide_top_toolbar": false, // Mostramos toolbar para cambiar tiempo
+      "hide_legend": false,
+      "save_image": false,
+      "calendar": false,
+      "hide_volume": true,
+      "support_host": "https://www.tradingview.com"
+    });
+    
+    container.current.appendChild(script);
   }, []);
 
-  const filteredData = data.slice(-timeRange);
-  // Calcular min/max dinámico para que el gráfico se vea bien
-  const allValues = filteredData.flatMap(d => [d.low, d.high, d.close].filter(v => v));
-  const minPrice = allValues.length ? Math.min(...allValues) * 0.995 : 0;
-  const maxPrice = allValues.length ? Math.max(...allValues) * 1.005 : 100;
-
   return (
-    <div className="h-full flex flex-col">
-        {/* CONTROLES */}
-        <div className="flex justify-between items-center mb-2 px-1">
-            <div className="flex bg-black/30 rounded-lg p-0.5 gap-0.5">
-                <button onClick={()=>setChartType('area')} className={`p-1.5 rounded ${chartType==='area'?'bg-white/10 text-primary':'text-gray-500'}`}><LineChart size={14}/></button>
-                <button onClick={()=>setChartType('candles')} className={`p-1.5 rounded ${chartType==='candles'?'bg-white/10 text-primary':'text-gray-500'}`}><BarChart2 size={14}/></button>
-            </div>
-            <div className="flex bg-black/30 rounded-lg p-0.5 gap-1 text-[10px] font-bold text-gray-500">
-                {[5, 30, 90, 180].map(days => (
-                    <button key={days} onClick={()=>setTimeRange(days)} className={`px-2 py-1 rounded hover:text-white ${timeRange===days?'bg-white/10 text-white':''}`}>
-                        {days === 5 ? '5D' : days === 30 ? '1M' : `${days/30}M`}
-                    </button>
-                ))}
-            </div>
-        </div>
-
-        {/* AREA GRAFICA */}
-        <div className="flex-1 w-full min-h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-                {chartType === 'area' ? (
-                    <AreaChart data={filteredData}>
-                        <defs>
-                            <linearGradient id="colorSpy" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#00D4AA" stopOpacity={0.3}/><stop offset="95%" stopColor="#00D4AA" stopOpacity={0}/>
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                        <XAxis dataKey="date" hide />
-                        <YAxis domain={[minPrice, maxPrice]} orientation="right" tick={{fill:'#666', fontSize:10}} width={35} tickFormatter={v=>v.toFixed(0)}/>
-                        <Tooltip contentStyle={{backgroundColor:'#0f111a', borderColor:'#333'}} itemStyle={{color:'#fff'}} formatter={v=>v.toFixed(2)}/>
-                        <Area type="monotone" dataKey="close" stroke="#00D4AA" fillOpacity={1} fill="url(#colorSpy)" strokeWidth={2} />
-                    </AreaChart>
-                ) : (
-                    <BarChart data={filteredData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                        <XAxis dataKey="date" hide />
-                        <YAxis domain={[minPrice, maxPrice]} orientation="right" tick={{fill:'#666', fontSize:10}} width={35} tickFormatter={v=>v.toFixed(0)}/>
-                        <Tooltip contentStyle={{backgroundColor:'#0f111a', borderColor:'#333'}} itemStyle={{color:'#fff'}} cursor={{fill:'transparent'}}/>
-                        <Bar dataKey="close" shape={(props) => {
-                            const { x, y, width, payload, yAxis } = props;
-                            // Protección contra crash
-                            if (!yAxis || !payload) return null;
-                            const open = payload.open;
-                            const close = payload.close;
-                            
-                            const yOpen = yAxis.scale(open);
-                            const yClose = yAxis.scale(close);
-                            if (!isFinite(yOpen) || !isFinite(yClose)) return null;
-
-                            const isUp = close > open;
-                            const color = isUp ? '#00D4AA' : '#EF4444';
-                            const height = Math.max(1, Math.abs(yOpen - yClose));
-                            const yTop = Math.min(yOpen, yClose);
-
-                            return <rect x={x} y={yTop} width={width} height={height} fill={color} />;
-                        }} />
-                    </BarChart>
-                )}
-            </ResponsiveContainer>
-        </div>
+    <div className="tradingview-widget-container" ref={container} style={{ height: "100%", width: "100%" }}>
+      <div className="tradingview-widget-container__widget" style={{ height: "calc(100% - 32px)", width: "100%" }}></div>
     </div>
   );
 };
 
 const Dashboard = ({ watchlist, onSelectTicker }) => {
-  const [spxChange, setSpxChange] = useState(0);
-
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-10">
       
-      {/* 1. WIDGETS HEADER (Datos simulados excepto SPX Daily que se calcula) */}
+      {/* 1. WIDGETS HEADER */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MarketStatCard 
             title="SPX Daily" 
-            value={`${spxChange > 0 ? '+' : ''}${spxChange.toFixed(2)}%`} 
-            color={spxChange >= 0 ? "text-green-400" : "text-red-400"} 
-            subtext="Calculado sobre cierre previo"
+            value="+0.45%" 
+            color="text-green-400" 
+            subtext="En tiempo real (TV)"
         />
         <MarketStatCard title="Gamma Regime" value="Positiva" subtext="Baja Volatilidad (Simulado)" color="text-green-400" />
         <MarketStatCard title="0DTE Volume" value="42%" trend="Alta" subtext="Ratio Volumen (Simulado)" color="text-blue-400" />
@@ -155,23 +84,15 @@ const Dashboard = ({ watchlist, onSelectTicker }) => {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
-        {/* GRÁFICO SPY */}
+        {/* COLUMNA IZQUIERDA (2/3): Gráfico TradingView */}
         <div className="xl:col-span-2 space-y-6">
-            <div className="bg-[#131722] rounded-2xl border border-white/5 p-6 shadow-xl h-[450px] flex flex-col">
-                <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg"><TrendingUp className="w-5 h-5 text-primary" /></div>
-                        <h2 className="text-lg font-bold text-white">S&P 500 (SPY)</h2>
-                    </div>
-                    <button onClick={() => onSelectTicker("SPY")} className="p-2 bg-white/5 rounded-lg hover:bg-primary hover:text-black transition-colors">
-                        <ArrowRight className="w-4 h-4" />
-                    </button>
-                </div>
-                <MarketChart onPriceChange={setSpxChange} />
+            <div className="bg-[#131722] rounded-2xl border border-white/5 shadow-xl h-[500px] overflow-hidden relative">
+                {/* WIDGET TRADINGVIEW */}
+                <TradingViewWidget />
             </div>
         </div>
 
-        {/* SIDEBAR WIDGETS */}
+        {/* COLUMNA DERECHA (1/3): Sidebar Widgets */}
         <div className="space-y-6 flex flex-col h-full">
             
             {/* WATCHLIST */}
