@@ -3,19 +3,22 @@ import { LayoutGrid, Search, BookOpen, BarChart2 } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid }, // PRIMERA POSICIÓN
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
     { id: 'screener', label: 'Scanner', icon: Search },
     { id: 'playbook', label: 'Playbook', icon: BookOpen },
     { id: 'analysis', label: 'Analysis', icon: BarChart2 },
-    // { id: 'glossary', label: 'Glosario', icon: FileText } // Opcional si quieres enlace directo
   ];
 
   return (
     <div className="w-20 lg:w-64 bg-[#0b0e14] border-r border-white/5 flex flex-col h-screen transition-all duration-300">
       
-      {/* LOGO */}
-      <div className="h-16 flex items-center justify-center lg:justify-start px-6 border-b border-white/5">
-        <div className="p-2 bg-primary/10 rounded-xl mr-3">
+      {/* LOGO PRINCIPAL (AHORA ES EL BOTÓN HOME) */}
+      <div 
+        className="h-16 flex items-center justify-center lg:justify-start px-6 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors group"
+        onClick={() => setActiveTab('dashboard')} // <-- Acción de ir al inicio
+        title="Ir al Dashboard"
+      >
+        <div className="p-2 bg-primary/10 rounded-xl mr-3 group-hover:bg-primary/20 transition-colors">
           <LayoutGrid className="w-6 h-6 text-primary" />
         </div>
         <span className="hidden lg:block text-xl font-bold tracking-tight text-white">
@@ -23,7 +26,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         </span>
       </div>
 
-      {/* MENÚ */}
+      {/* MENÚ DE NAVEGACIÓN */}
       <nav className="flex-1 py-6 space-y-2 px-3">
         {menuItems.map((item) => {
           const isActive = activeTab === item.id;
@@ -50,7 +53,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         })}
       </nav>
 
-      {/* FOOTER */}
+      {/* FOOTER - ESTADO SISTEMA */}
       <div className="p-4 border-t border-white/5">
         <div className="bg-gradient-to-br from-[#131722] to-black p-4 rounded-xl border border-white/5 hidden lg:block">
           <p className="text-xs text-gray-500 mb-2">Estado del Sistema</p>
