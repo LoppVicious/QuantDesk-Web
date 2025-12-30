@@ -37,7 +37,7 @@ const TradingViewChart = () => {
       "enable_publishing": false,
       "allow_symbol_change": false,
       "backgroundColor": "rgba(19, 23, 34, 1)",
-      "gridColor": "rgba(255, 255, 255)",
+      "gridColor": "rgba(255, 255, 255, 0)",
       "hide_top_toolbar": false,
       "hide_legend": false,
       "save_image": false,
