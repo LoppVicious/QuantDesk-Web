@@ -76,12 +76,12 @@ const TradingViewCalendar = () => {
     script.async = true;
     script.innerHTML = JSON.stringify({
       "colorTheme": "dark",
-      "isTransparent": true, // Fondo transparente para fusionarse con el div padre
+      "isTransparent": true, 
       "width": "100%",
       "height": "100%",
       "locale": "en",
-      "importanceFilter": "0,1", // Solo noticias de Alta (1) y Media (0) importancia
-      "currencyFilter": "USD, EUR" // Solo noticias de USA (relevante para SPY)
+      "importanceFilter": "0,1", 
+      "currencyFilter": "USD,EUR" // <--- AÑADIDO EUR AQUÍ
     });
     container.current.appendChild(script);
   }, []);
@@ -160,6 +160,7 @@ const Dashboard = ({ watchlist, onSelectTicker }) => {
                     <TradingViewCalendar />
                 </div>
             </div>
+
         </div>
       </div>
     </div>
